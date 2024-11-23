@@ -4,36 +4,38 @@ import MapKit
 struct MapView: View {
     
     @StateObject private var viewModel = MapViewModel() // 使用 ViewModel
-    @State private var region: MKCoordinateRegion
+    @State private var location: CLLocationCoordinate2D
     @State private var isLocationPermissionRequested = false
     
     // 初始化默认的地图区域
     init() {
         // 设置初始显示区域（例如：旧金山）
-        let initialRegion = MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194),
-            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-        )
-        _region = State(initialValue: initialRegion)
+        let initialLocation = CLLocationCoordinate2D(latitude: 37.7749, longitude: -122.4194)
+        _location = State(initialValue: initialLocation)
     }
     
     var body: some View {
         ZStack {
             // 使用 Map 视图来展示地图
-            Map(coordinateRegion: $region, showsUserLocation: true)
+//            Map(coordinateRegion: $region, showsUserLocation: true)
+            Map {
+                Marker("Your location",systemImage: "location.fill",coordinate: location).tint(.blue)
+            
+            }
                 .onAppear {
                     // 请求位置权限并获取用户的坐标
                     viewModel.requestLocationPermission() // 请求位置权限
                     viewModel.startUpdatingLocation() // 开始获取用户坐标
                 }
-                .onChange(of: viewModel.userLocation) { newLocation in
+                .onChange(of: viewModel.userLocation) {
+                    let newLocation = viewModel.userLocation
                     // 当用户的坐标从后端获取后，更新地图区域
                     if let userLocation = newLocation {
-                        region = MKCoordinateRegion(
-                            center: userLocation,
-                            span: region.span
-                        )
+                        location = userLocation
                     }
+                }
+                .mapControls {
+                    MapUserLocationButton()
                 }
             
             // 如果有用户位置，更新地图区域并显示标记

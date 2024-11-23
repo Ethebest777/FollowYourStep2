@@ -20,7 +20,8 @@ struct PostEditorView: View {
                 // 标题输入
                 Section(header: Text("Title")) {
                     TextField("Enter post title", text: $viewModel.title)
-                        .onChange(of: viewModel.title) { newTitle in
+                        .onChange(of: viewModel.title) {
+                            let newTitle = viewModel.title
                             viewModel.updateTitle(newTitle)
                         }
                         .foregroundColor(viewModel.isTitleValid ? .primary : .red)
@@ -29,7 +30,8 @@ struct PostEditorView: View {
                 // 内容输入
                 Section(header: Text("Post Text")) {
                     TextEditor(text: $viewModel.text)
-                        .onChange(of: viewModel.text) { newText in
+                        .onChange(of: viewModel.text) {
+                            let newText = viewModel.text
                             viewModel.updateText(newText)
                         }
                         .frame(height: 150)
@@ -70,6 +72,10 @@ struct PostEditorView: View {
                     }) {
                         Text("Select Location")
                     }
+                    // 显示当前选定的坐标（后续需要更改显示的方式）
+                    let location = viewModel.selectedLocation
+                    Text("Latitude: \(location.latitude), Longitude: \(location.longitude)")
+                        .foregroundColor(.gray)
                 }
                 
                 // 保存按钮
@@ -91,14 +97,15 @@ struct PostEditorView: View {
             })
             .sheet(isPresented: $isImagePickerPresented) {
                 ImagePicker(selectedImage: $selectedImage, isImagePickerPresented: $isImagePickerPresented)
-                    .onChange(of: selectedImage) { newImage in
-                        if let newImage = newImage {
-                            viewModel.addImage(newImage)
-                        }
-                    }
             }
             .sheet(isPresented: $isLocationPickerPresented) {
                 LocationPickerView(selectedCoordinate: $viewModel.selectedLocation)
+            }
+        }
+        .onChange(of: selectedImage) {
+            if let newImage = selectedImage {
+                viewModel.addImage(newImage)
+                print("New image added, images count: \(viewModel.images.count)")
             }
         }
     }

@@ -5,18 +5,8 @@ struct PostDetailView: View {
     
     @ObservedObject var viewModel: PostDetailViewModel
     
-    @State private var region: MKCoordinateRegion // 地图显示区域
-    
-    // 自定义标记图标
-    let pinImage = Image(systemName: "mappin.circle.fill") // 使用系统的地图标记图标
-    
     init(viewModel: PostDetailViewModel) {
         self.viewModel = viewModel
-        // 初始化地图的区域，设置为帖子地点的经纬度
-        _region = State(initialValue: MKCoordinateRegion(
-            center: CLLocationCoordinate2D(latitude: viewModel.post.latitude, longitude: viewModel.post.longitude),
-            span: MKCoordinateSpan(latitudeDelta: 0.05, longitudeDelta: 0.05)
-        ))
     }
     
     var body: some View {
@@ -81,14 +71,8 @@ struct PostDetailView: View {
                 .padding(.top)
 
                 // 帖子对应地点的地图显示+标记
-                Map(coordinateRegion: $region, interactionModes: .all, showsUserLocation: true, userTrackingMode: .none, annotationItems: [viewModel.post]) { post in
-                    // Custom pin at the post's location
-                    MapAnnotation(coordinate: post.coordinate) {
-                        pinImage
-                            .resizable()
-                            .frame(width: 30, height: 30)
-                            .foregroundColor(.red)
-                    }
+                Map {
+                    Marker("Location", coordinate: viewModel.post.coordinate)
                 }
                 .frame(height: 250)
                 .cornerRadius(10)
@@ -100,16 +84,6 @@ struct PostDetailView: View {
         }
         .navigationTitle("Post Detail")
         .navigationBarTitleDisplayMode(.inline)
-    }
-}
-
-// MARK: - LocationAnnotation
-struct LocationAnnotation: Identifiable {
-    var id = UUID()  // 唯一标识符
-    var coordinate: CLLocationCoordinate2D
-
-    init(post: Post) {
-        self.coordinate = CLLocationCoordinate2D(latitude: post.latitude, longitude: post.longitude)
     }
 }
 
